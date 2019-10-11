@@ -2,112 +2,155 @@ package io.neurolab.activities;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.StrictMode;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import android.util.SparseBooleanArray;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
+import android.widget.Toast;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-
+import java.util.Set;
 import io.neurolab.R;
-import io.neurolab.adapters.ShareDataAdapter;
 
 import static io.neurolab.utilities.FilePathUtil.CSV_DIRECTORY;
-import static io.neurolab.utilities.FilePathUtil.readWriteData;
-import static io.neurolab.utilities.FilePathUtil.setupPath;
 
 public class ShareDataActivity extends AppCompatActivity {
 
     private static Button shareBtn;
-    private static Button cancelBtn;
-
-    public static List<String> fileList = new ArrayList<>();
-    public static List<File> filesList = new ArrayList<>();
-    public static String PACKAGE_NAME;
+    private static String[] fileList;
+    private static String[] newFileName;
     public static Context context;
-    public static RecyclerView shareDataRecyclerView;
+    private static Intent resultIntent;
+    private static ListView fileListView;
+    private static int found = 0;
+    Set<File> selectedFiles = new HashSet<>();
+    Uri fileUri;
+    ArrayList<Uri> selectedUri = new ArrayList<Uri>();
+    Set<Uri> set;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_share_data);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        Toast.makeText(this, R.string.share_screen_toast, Toast.LENGTH_SHORT).show();
+
         shareBtn = findViewById(R.id.share_btn);
-        cancelBtn = findViewById(R.id.cancel_btn);
-        shareDataRecyclerView = findViewById(R.id.share_recycler_view);
-        PACKAGE_NAME = getApplicationContext().getPackageName();
+        fileListView = findViewById(R.id.fileListView);
         context = getApplicationContext();
+
+        resultIntent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+        resultIntent.setType("text/plain");
+
+        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+        StrictMode.setVmPolicy(builder.build());
+
         File appDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator +
                 CSV_DIRECTORY);
-
-       // String AppDirectory = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + CSV_DIRECTORY;
-        showLoggedDataList(appDir);
-    }
-
-    private void showLoggedDataList(File appDir) {
         File[] files = appDir.listFiles();
+        fileList = new String[files.length];
+        newFileName = new String[files.length];
+
         if (appDir.listFiles() != null && files.length > 0) {
-            //noLoggedView.setVisibility(View.GONE);
-            fileList.clear();
-            for (File file : files) {
-                fileList.add(file.getPath());
-                        filesList.add(file);
+            int j = 0;
+            for (int i = 0; i < files.length; i++) {
+                fileList[j] = files[i].getAbsolutePath();
+                newFileName[i] = files[i].getName();
+                j++;
             }
-
-            ShareDataAdapter adapter = new ShareDataAdapter(fileList,filesList,context);
-            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(
-                    this, LinearLayoutManager.VERTICAL, false);
-            shareDataRecyclerView.setLayoutManager(linearLayoutManager);
-            shareDataRecyclerView.setAdapter(adapter);
-        } else {
-            setupPath();
-            // noLoggedView.setVisibility(View.GONE);
-
-            readWriteData("sample1", appDir);
-            readWriteData("sample2", appDir);
-            readWriteData("sample3", appDir);
-            readWriteData("sample4", appDir);
-
-            ShareDataAdapter adapter = new ShareDataAdapter(fileList, filesList, context);
-            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(
-                    this, LinearLayoutManager.VERTICAL, false);
-            shareDataRecyclerView.setLayoutManager(linearLayoutManager);
-            shareDataRecyclerView.setAdapter(adapter);
-
         }
+
+        final List<String> file_list = new ArrayList<String>(Arrays.asList(newFileName));
+        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>
+                (this, android.R.layout.simple_list_item_multiple_choice, file_list);
+        fileListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+        fileListView.setItemsCanFocus(false);
+        fileListView.setAdapter(arrayAdapter);
+
+        fileListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+          @Override
+          public void onItemClick(AdapterView<?> adapterView, View view, int position, long rowId) {
+
+          SparseBooleanArray sparseBooleanArray = fileListView.getCheckedItemPositions();
+          File requestFile = new File(fileList[position]);
+
+          try {
+              fileUri = FileProvider.getUriForFile(ShareDataActivity.this, "io.neurolab.fileprovider", requestFile);
+          } catch (IllegalArgumentException e) {
+              e.printStackTrace();
+          }
+
+          for (int i = 0; i < fileListView.getCount(); i++) {
+              if (sparseBooleanArray.get(i)) {
+                  selectedFiles.add(files[i]);
+              } else if (!sparseBooleanArray.get(i)) {
+                  selectedFiles.remove(files[i]);
+              }
+          }
+
+          for (int i = 0; i < fileListView.getCount(); i++) {
+              if (sparseBooleanArray.get(i)) {
+                  found++;
+              }
+          }
+          if (found == 0) {
+              selectedFiles.clear();
+          }
+
+          List<ResolveInfo> resInfoList = getApplicationContext().getPackageManager().queryIntentActivities(resultIntent, PackageManager.MATCH_DEFAULT_ONLY);
+          for (ResolveInfo resolveInfo : resInfoList) {
+              String packageName = resolveInfo.activityInfo.packageName;
+              getApplicationContext().grantUriPermission(packageName, fileUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+             }
+          }
+        }
+      );
     }
 
-    public void onCancelClick(View v)
-    {
-        onSupportNavigateUp();
+    public void CreateUriList(Set<File> selectedFiles) {
+        for (File file : selectedFiles) {
+            Uri uri = Uri.fromFile(file);
+            selectedUri.add(uri);
+        }
+        set = new HashSet<>(selectedUri);
+        selectedUri.clear();
+        selectedUri.addAll(set);
+    }
+
+    public void onShareClicked(View v) {
+        if (selectedFiles.size() == 0) {
+            Toast.makeText(this, R.string.share_toast, Toast.LENGTH_SHORT).show();
+        } else {
+            CreateUriList(selectedFiles);
+            resultIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            if (fileUri != null) {
+                resultIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, selectedUri);
+                resultIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                startActivity(Intent.createChooser(resultIntent, "Share"));
+            }
+            selectedFiles.clear();
+            selectedUri.clear();
+        }
     }
 
     @Override
-    public boolean onSupportNavigateUp(){
+    public boolean onSupportNavigateUp() {
         finish();
         return true;
     }
-
-    public void onShareClicked(View v)
-    {
-      //  Log.d("Share Button"," Clicked!");
-        Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_SEND_MULTIPLE);
-        intent.putExtra(Intent.EXTRA_SUBJECT,"Here are files you shared.");
-        intent.setType("*/*");
-
-        ArrayList<Uri> uris = new ArrayList<Uri>();
-        for(String path : fileList){
-            File file = new File(path);
-            Uri uri = Uri.fromFile(file);
-            uris.add(uri);
-        }
-        intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
-        startActivity(intent);
-    }
 }
+

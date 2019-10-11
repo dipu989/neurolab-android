@@ -23,6 +23,17 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup">
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="io.neurolab.fileprovider"
+            android:grantUriPermissions="true"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/filepaths" />
+        </provider>
+
         <activity android:name=".activities.RelaxParentActivity"/>
         <activity android:name=".activities.PinLayoutActivity" />
         <activity android:name=".activities.MeditationListActivity" />
@@ -31,7 +42,20 @@
             android:label="Share Data"/>
         <activity
             android:name=".activities.FocusParentActivity"
-            android:noHistory="true" />
+            android:noHistory="true" >
+        <intent-filter>
+            <action
+                android:name="android.intent.action.PICK"/>
+            <category
+                android:name="android.intent.category.DEFAULT"/>
+            <category
+                android:name="android.intent.category.OPENABLE"/>
+            <data android:mimeType="text/plain"/>
+            <data android:mimeType="image/*"/>
+            <data android:mimeType="*/*"/>
+        </intent-filter>
+        </activity>
+
         <activity
             android:name=".activities.TestModeActivity"
             android:label="@string/title_activity_test_mode"

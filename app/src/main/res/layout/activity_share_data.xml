@@ -1,23 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".activities.ShareDataActivity">
-
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/share_recycler_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/linear_layout"
-        android:layout_below="@+id/textView"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginStart="0dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp" />
 
     <LinearLayout
         android:id="@+id/linear_layout"
@@ -25,41 +11,32 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginStart="-1dp"
-        android:layout_marginBottom="3dp"
-        android:gravity="bottom"
-        android:orientation="horizontal">
+        android:layout_marginBottom="@dimen/layout_margin_extra_small"
+        android:gravity="center"
+        android:orientation="vertical">
 
         <Button
             android:id="@+id/share_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/layout_margin_medium"
+            android:background="@drawable/button_bg_rounded"
             android:onClick="onShareClicked"
-            android:text="Share"
-            android:textSize="18sp" />
-
-        <Button
-            android:id="@+id/cancel_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="@dimen/layout_margin_medium"
-            android:onClick="onCancelClick"
-            android:text="Cancel"
-            android:textSize="18sp" />
+            android:text="@string/share_nav_drawer"
+            android:textAlignment="center"
+            android:textColor="@color/color_white_background"
+            android:textSize="@dimen/text_size_large"
+            android:textStyle="bold" />
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
+    <ListView
+        android:id="@+id/fileListView"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_above="@+id/linear_layout"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:padding="@dimen/layout_margin_medium"
-        android:text="0 items selected"
-        android:textAlignment="center"
-        android:textSize="18sp" />
-
+        android:layout_marginTop="@dimen/layout_margin_medium"
+        android:layout_marginBottom="@dimen/layout_margin_medium" />
 
 </RelativeLayout>

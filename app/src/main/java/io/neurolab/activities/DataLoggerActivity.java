@@ -7,11 +7,9 @@ import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +30,6 @@ public class DataLoggerActivity extends AppCompatActivity {
     public static List<File> filesList = new ArrayList<>();
     public static String PACKAGE_NAME;
     public static Context context;
-
     private String flag;
 
     @Override
@@ -44,7 +41,6 @@ public class DataLoggerActivity extends AppCompatActivity {
 
         PACKAGE_NAME = getApplicationContext().getPackageName();
         context = getApplicationContext();
-
 
         if (getIntent().getExtras() != null)
             flag = getIntent().getExtras().getString(ProgramModeActivity.PROGRAM_FLAG_KEY);
@@ -104,23 +100,5 @@ public class DataLoggerActivity extends AppCompatActivity {
             startActivity(intent);
         }
         finish();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.data_logger_menu, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        int itemId = item.getItemId();
-            if(itemId == R.id.share)
-            {
-              Intent intent = new Intent(this,ShareDataActivity.class);
-                  startActivity(intent);
-            }
-        return true;
     }
 }
