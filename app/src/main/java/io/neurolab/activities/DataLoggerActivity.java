@@ -7,6 +7,8 @@ import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import java.io.File;
@@ -90,6 +92,22 @@ public class DataLoggerActivity extends AppCompatActivity {
     public void clearRedundantFiles() {
         filesList.clear();
         fileList.clear();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.share_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.share:
+                startActivity(new Intent(this,ShareDataActivity.class));
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
